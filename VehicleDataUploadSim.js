@@ -4,6 +4,7 @@ const ROOT = "http://localhost:8080/api/vehicleData";
 const UPLOAD_ENDPOINT = `${ROOT}/uploadData`;
 const BATCH_UPLOAD_ENDPOINT = `${ROOT}/uploadDataMany`;
 
+const MPG_RANGE = [10, 15];
 const CO_RANGE = [0, 100];
 const NOx_RANGE = [0, 100];
 const PARTICULATE_MATTER_RANGE = [0, 100];
@@ -36,6 +37,7 @@ const generateDataPoint = (vehicle) => {
 	data = {
 		vehicleName: vehicle.vehicleName,
 		vehicleID: vehicle.vehicleID,
+		mpg: randRange(...MPG_RANGE),
 		CO: randRange(...CO_RANGE),
 		NOx: randRange(...NOx_RANGE),
 		particulateMatter: randRange(...PARTICULATE_MATTER_RANGE),
@@ -92,6 +94,16 @@ const uploadOneRandom = async () => {
 	await uploadDataPoint(dataPoint);
 };
 
+// update aggregateData
+const updateAggregateData = async () => {
+	try {
+		const response = await axios.post("http://localhost:8080/api/aggregateData/update");
+		console.log(response.data);
+	} catch (error) {
+		console.log(error);
+	}
+};
+
 // Simulation Function
 // Upload a single random data point on a continuous interval
 const liveDataSimulation = async (interval, maxDeviation) => {
@@ -132,7 +144,10 @@ const liveDataSimulation = async (interval, maxDeviation) => {
 	}
 };
 
-uploadOneRandom();
+//uploadOneRandom();
 
-// liveDataSimulation(1000, DEFAULT_MAX_DEVIATION);
+liveDataSimulation(2000, DEFAULT_MAX_DEVIATION);
+
 // cleanUp();
+
+// updateAggregateData();
