@@ -1,8 +1,10 @@
 const axios = require("axios");
 
-const ROOT = "http://localhost:8080/api/vehicleData";
-const UPLOAD_ENDPOINT = `${ROOT}/uploadData`;
-const BATCH_UPLOAD_ENDPOINT = `${ROOT}/uploadDataMany`;
+const ROOT = "http://localhost:8080/api";
+const PRODUCTION_ROOT = "https://hnoi-api.onrender.com/api";
+const UPLOAD_ENDPOINT = `${PRODUCTION_ROOT}/vehicleData/uploadData`;
+const BATCH_UPLOAD_ENDPOINT = `${PRODUCTION_ROOT}/vehicleData/uploadDataMany`;
+const AGGREGATE_ENDPOINT = `${PRODUCTION_ROOT}/aggregateData/update`;
 
 const MPG_RANGE = [10, 15];
 const CO_RANGE = [0, 100];
@@ -44,6 +46,7 @@ const generateDataPoint = (vehicle) => {
 		fuelLevel: randRange(...FUEL_LEVEL_RANGE),
 		flowrate: randRange(...FLOWRATE_RANGE),
 		time: Date.now(),
+		hydrogenFuel: Math.random() < 0.5,
 	};
 
 	return data;
@@ -55,12 +58,14 @@ const generateDataPointFromPrevious = (previousDataPoint, maxDeviation) => {
 	data = {
 		vehicleName: previousDataPoint.vehicleName,
 		vehicleID: previousDataPoint.vehicleID,
+		mpg: previousDataPoint.mpg + randRange(-maxDeviation, maxDeviation),
 		CO: previousDataPoint.CO + randRange(-maxDeviation, maxDeviation),
 		NOx: previousDataPoint.NOx + randRange(-maxDeviation, maxDeviation),
 		particulateMatter: previousDataPoint.particulateMatter + randRange(-maxDeviation, maxDeviation),
 		flowrate: previousDataPoint.flowrate + randRange(-maxDeviation, maxDeviation),
 		fuelLevel: previousDataPoint.fuelLevel - randRange(0, 0.5),
 		time: previousDataPoint.time + 1000,
+		hydrogenFuel: Math.random() < 0.5,
 	};
 
 	return data;
@@ -97,7 +102,7 @@ const uploadOneRandom = async () => {
 // update aggregateData
 const updateAggregateData = async () => {
 	try {
-		const response = await axios.post("http://localhost:8080/api/aggregateData/update");
+		const response = await axios.post(AGGREGATE_ENDPOINT);
 		console.log(response.data);
 	} catch (error) {
 		console.log(error);
@@ -126,7 +131,7 @@ const liveDataSimulation = async (interval, maxDeviation) => {
 	// Loop forever
 	while (true) {
 
-		// Wait 1 second
+		// Wait interval miliseconds
 		await new Promise((resolve) => setTimeout(resolve, interval));
 
 		// Generate a random data point for each vehicle
@@ -144,9 +149,9 @@ const liveDataSimulation = async (interval, maxDeviation) => {
 	}
 };
 
-//uploadOneRandom();
+// uploadOneRandom();
 
-liveDataSimulation(2000, DEFAULT_MAX_DEVIATION);
+liveDataSimulation(1000, 2);
 
 // cleanUp();
 
